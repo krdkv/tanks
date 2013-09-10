@@ -34,8 +34,10 @@ ws.onmessage = function(message) {
         
         if ( response["method"] == "hello" ) {
             $("#welcome").css("display", "block");
+        } else if ( response["method"] == "startGame" ) {
+            print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
         } else if ( response["method"] == "endGame" ) {
-            print("New game: " + response["players"][0] + " VS " + response["players"][1]);
+            print("End game: " + response["players"][0] + " VS " + response["players"][1]);
             print("Winner is " + response["winner"]);
         }
 };

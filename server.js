@@ -15,10 +15,38 @@ function shuffle(array) {
     }
 };
 
+function random(size) {
+    return Math.floor((Math.random()*size));
+}
+
+
+
+// =================================================== MAP ===================================================
+
+function Map() {
+    this.numberOfPlayers = 0;
+    this.width = 0;
+    this.height = 0;
+}
+
+Map.prototype.generate = function(numberOfPlayers) {
+    
+    this.numberOfPlayers = numberOfPlayers;
+    this.width = 10 + random(10);
+    this.height = 10 + random(10);
+    
+    console.log("Map " + this.width + " " + this.height);
+}
+
+Map.prototype.getJSON = function() {
+    return { "width":this.width, "height":this.height };
+}
+
 // =================================================== GAME ===================================================
 
 function Game() {
     this.players = new Array();
+    this.map = new Map();
 }
 
 Game.prototype.addPlayer = function(player) {
@@ -26,11 +54,17 @@ Game.prototype.addPlayer = function(player) {
 }
 
 Game.prototype.play = function() {
-    var playersArray = new Array();
+    
+    this.map.generate(this.players.length);
+    
+    broadcast({"method":"startGame", "map":this.map.getJSON()});
+    
+    var playerNames = new Array();
     for ( var player in this.players ) {
-        playersArray.push(this.players[player]["nickname"]);
+        playerNames.push(this.players[player]["nickname"]);
     }
-    broadcast({"method":"endGame", "winner":this.players[Math.floor((Math.random()*this.players.length))]["nickname"], "players":playersArray});
+    
+    broadcast({"method":"endGame", "winner":this.players[random(this.players.length)]["nickname"], "players":playerNames});
 }
 
 // =================================================== TOURNAMENT ===================================================
