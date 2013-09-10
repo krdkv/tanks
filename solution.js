@@ -1,5 +1,5 @@
 function getName() {
-    return "Nick" + Math.random();
+    return "Super team";
 }
 
 // players - Array of names

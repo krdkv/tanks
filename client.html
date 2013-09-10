@@ -7,6 +7,7 @@
 </head>
 <body>
     <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
+    <img id="tank" src="img/tank.png" style="display:none;"></img>
 </body>
 <script language="Javascript">
     
@@ -60,7 +61,7 @@ ws.onclose = function() {
         var step = 40;
         
         $("#canvas").attr("width", 40 * map["width"]);
-        $("#canvas").attr("height", 40 * map["height"]);        
+        $("#canvas").attr("height", 40 * map["height"]);
         
         var canvas = document.getElementById("canvas");
         var context = canvas.getContext("2d");
@@ -74,6 +75,8 @@ ws.onclose = function() {
             context.moveTo(0, i * step);
             context.lineTo(step * map["width"], i * step);
         }
+        
+        context.drawImage($("#tank").get(0), 0, 0);
         
         context.strokeStyle = "black";
         context.stroke();
