@@ -19,8 +19,6 @@ function random(size) {
     return Math.floor((Math.random()*size));
 }
 
-
-
 // =================================================== MAP ===================================================
 
 function Map() {
@@ -56,15 +54,15 @@ Game.prototype.addPlayer = function(player) {
 Game.prototype.play = function() {
     
     this.map.generate(this.players.length);
-    
-    broadcast({"method":"startGame", "map":this.map.getJSON()});
-    
+
     var playerNames = new Array();
     for ( var player in this.players ) {
         playerNames.push(this.players[player]["nickname"]);
     }
     
-    broadcast({"method":"endGame", "winner":this.players[random(this.players.length)]["nickname"], "players":playerNames});
+    broadcast({"method":"startGame", "map":this.map.getJSON(), "players":playerNames});
+    
+    broadcast({"method":"endGame", "winner":this.players[random(this.players.length)]["nickname"]});
 }
 
 // =================================================== TOURNAMENT ===================================================
