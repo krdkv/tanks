@@ -2,12 +2,10 @@
 <head>
     <script src="http://code.jquery.com/jquery-latest.min.js"
         type="text/javascript"></script>
+    <script src="solution.js"
+        type="text/javascript"></script>
 </head>
 <body>
-    <div id="welcome" style="display:none;">
-        <input id="name"></input>
-        <button onclick="setName()">Go</button>
-    </div>
 </body>
 <script language="Javascript">
     
@@ -33,11 +31,20 @@ ws.onmessage = function(message) {
         var response = JSON.parse(message.data);
         
         if ( response["method"] == "hello" ) {
-            $("#welcome").css("display", "block");
+            
+            ws.send(JSON.stringify({"method":"name", "data": getName()}));
+            
         } else if ( response["method"] == "startGame" ) {
+            
+            startGame(response["players"], response["map"]);
+            
             print("New game: " + response["players"][0] + " VS " + response["players"][1]);
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
+            
         } else if ( response["method"] == "endGame" ) {
+            
+            endGame(response["winner"]);
+            
             print("Winner is " + response["winner"]);
         }
 };

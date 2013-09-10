@@ -15,17 +15,19 @@ function shuffle(array) {
     }
 };
 
+// If only one argument is provided, than it will generate random number from 0 to left
+// In other case it will generate number between left and right
 function random(left, right) {
     if ( ! right ) {
         return Math.floor((Math.random()*left));
     } else {
-        return left + Math.floor((Math.random()*(right - left)));
+        return Math.floor(left) + Math.floor((Math.random()*(right - left)));
     }
 }
 
 // =================================================== TANK ===================================================
 
-function Tank() {
+function Tank(name) {
     this.X;
     this.Y;
 }
@@ -44,11 +46,6 @@ Map.prototype.generate = function(numberOfPlayers) {
     this.numberOfPlayers = numberOfPlayers;
     this.width = 10 + random(10);
     this.height = 10 + random(10);
-    
-    // Only the case of two players
-    
-//    var firstPlayerX = random(0, Math.floor(this.width/2));
-//    var firstPlayerY = random(0, Math.floor(this.height/2));
 }
 
 Map.prototype.getJSON = function() {
