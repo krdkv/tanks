@@ -4,27 +4,39 @@
         type="text/javascript"></script>
 </head>
 <body>
-
+    <div id="welcome" style="display:none;">
+        <input id="name"></input>
+        <button onclick="setName()">Go</button>
+    </div>
 </body>
 <script language="Javascript">
     
-    function print(str) {
-        $("body").append("<div>" + str + "</div>");
-    }
-    
 //    var ws = new WebSocket("ws://212.71.232.20:3000/");
     var ws = new WebSocket("ws://127.0.0.1:3000/");
+    
+    function setName() {
+        ws.send(JSON.stringify({"method":"name", "data":$("#name").val()}));
+    }
+    
+    function print(str) {
+        //console.log(str);
+        $("body").append("<div>" + str + "</div>");
+    }
 
     ws.onopen = function() {
-        print("Connected");
+        console.log("Connected");
     };
 
 ws.onmessage = function(message) {
-        print("Message from server: " + message.data);
+        console.log("Message from server: " + message.data);
         
         var response = JSON.parse(message.data);
+        
         if ( response["method"] == "hello" ) {
-            ws.send(JSON.stringify({"action":"shoot"}));
+            $("#welcome").css("display", "block");
+        } else if ( response["method"] == "endGame" ) {
+            print("New game: " + response["players"][0] + " VS " + response["players"][1]);
+            print("Winner is " + response["winner"]);
         }
 };
 
