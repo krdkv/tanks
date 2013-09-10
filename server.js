@@ -1,8 +1,19 @@
 var ws = require('websocket.io')
 , server = ws.listen(3000);
 
-var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 3;
+var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 2;
 
+// =================================================== HELPERS ===================================================
+
+function shuffle(array) {
+    var i = array.length;
+    while (--i) {
+        var j = Math.floor(Math.random() * (i + 1))
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+};
 
 // =================================================== GAME ===================================================
 
@@ -21,8 +32,6 @@ Game.prototype.play = function() {
     }
     broadcast({"method":"endGame", "winner":this.players[Math.floor((Math.random()*this.players.length))]["nickname"], "players":playersArray});
 }
-
-
 
 // =================================================== TOURNAMENT ===================================================
 
@@ -51,6 +60,8 @@ Tournament.prototype.start = function() {
             this.games.push(newGame);
         }
     }
+    
+    shuffle(this.games);
     
     for ( var i = 0; i < this.games.length; ++i ) {
         this.games[i].play();
