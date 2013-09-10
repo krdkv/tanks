@@ -1,5 +1,5 @@
 var ws = require('websocket.io')
-  , server = ws.listen(3000)
+, server = ws.listen(3000);
 
 server.on('connection', function (client) {
 
