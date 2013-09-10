@@ -1,0 +1,22 @@
+<html>
+<script language="Javascript">
+    
+    
+    var ws = new WebSocket("ws://212.71.232.20:3000/");
+    
+    ws.onopen = function() {
+        alert("on open");
+    };
+
+ws.onmessage = function(message) {
+    alert("on message");
+};
+
+ws.onclose = function() {
+    alert("on close");
+};
+    
+</script>
+
+
+</html>

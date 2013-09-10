@@ -1,18 +1,26 @@
 var ws = require('websocket.io')
   , server = ws.listen(3000)
 
+var clientArray = new Array();
+
+function printClientStatus() {
+    console.log("Number of clients " + clientArray.length);
+}
+
 server.on('connection', function (client) {
 
-  console.log("server on");
+  clientArray.push(client);
+  printClientStatus();
+          
+  client.on('message', function () {
 
-  client.on('message', function () { 
+  });
+  
+  client.on('close', function (client) {
 
-  console.log("message");
+  console.log("close " + client);
 
 });
-  client.on('close', function () { 
-
-  console.log("close");
-
-});
+          
+          
 });
