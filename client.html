@@ -6,6 +6,7 @@
         type="text/javascript"></script>
 </head>
 <body>
+    <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
 </body>
 <script language="Javascript">
     
@@ -18,7 +19,7 @@
     
     function print(str) {
         //console.log(str);
-        $("body").append("<div>" + str + "</div>");
+        $("body").prepend("<div>" + str + "</div>");
     }
 
     ws.onopen = function() {
@@ -37,6 +38,7 @@ ws.onmessage = function(message) {
         } else if ( response["method"] == "startGame" ) {
             
             startGame(response["players"], response["map"]);
+            drawMap(response["map"]);
             
             print("New game: " + response["players"][0] + " VS " + response["players"][1]);
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
@@ -53,6 +55,34 @@ ws.onclose = function() {
         print("Disconnected");
 };
 
+    function drawMap(map) {
+        
+        var step = 40;
+        
+        $("#canvas").attr("width", 40 * map["width"]);
+        $("#canvas").attr("height", 40 * map["height"]);        
+        
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+        
+        function drawBoard() {
+            
+            for ( var i = 0; i < map["width"] + 1; ++i ) {
+                context.moveTo(i * step, 0);
+                context.lineTo(i * step, step * map["height"]);
+            }
+            
+            for ( var i = 0; i < map["height"] + 1; ++i ) {
+                context.moveTo(0, i * step);
+                context.lineTo(step * map["width"], i * step);
+            }
+            
+            context.strokeStyle = "black";
+            context.stroke();
+        }
+        drawBoard();
+    }
+    
 </script>
 
 

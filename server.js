@@ -1,7 +1,7 @@
 var ws = require('websocket.io')
 , server = ws.listen(3000);
 
-var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 3;
+var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 2;
 
 // =================================================== HELPERS ===================================================
 

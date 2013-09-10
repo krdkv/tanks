@@ -9,7 +9,7 @@ function getName() {
 // map["height"]
 
 function startGame(players, map) {
-
+    
 }
 
 // winner - String
