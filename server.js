@@ -1,7 +1,7 @@
 var ws = require('websocket.io')
 , server = ws.listen(3000);
 
-var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 2;
+var TOURNAMENT_EXPECTED_PLAYERS_COUNT = 3;
 
 // =================================================== HELPERS ===================================================
 
@@ -15,8 +15,19 @@ function shuffle(array) {
     }
 };
 
-function random(size) {
-    return Math.floor((Math.random()*size));
+function random(left, right) {
+    if ( ! right ) {
+        return Math.floor((Math.random()*left));
+    } else {
+        return left + Math.floor((Math.random()*(right - left)));
+    }
+}
+
+// =================================================== TANK ===================================================
+
+function Tank() {
+    this.X;
+    this.Y;
 }
 
 // =================================================== MAP ===================================================
@@ -25,6 +36,7 @@ function Map() {
     this.numberOfPlayers = 0;
     this.width = 0;
     this.height = 0;
+    this.tanks = new Array();
 }
 
 Map.prototype.generate = function(numberOfPlayers) {
@@ -33,7 +45,10 @@ Map.prototype.generate = function(numberOfPlayers) {
     this.width = 10 + random(10);
     this.height = 10 + random(10);
     
-    console.log("Map " + this.width + " " + this.height);
+    // Only the case of two players
+    
+//    var firstPlayerX = random(0, Math.floor(this.width/2));
+//    var firstPlayerY = random(0, Math.floor(this.height/2));
 }
 
 Map.prototype.getJSON = function() {
