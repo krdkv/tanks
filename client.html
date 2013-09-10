@@ -1,21 +1,37 @@
 <html>
+<head>
+    <script src="http://code.jquery.com/jquery-latest.min.js"
+        type="text/javascript"></script>
+</head>
+<body>
+
+</body>
 <script language="Javascript">
     
+    function print(str) {
+        $("body").append("<div>" + str + "</div>");
+    }
     
-    var ws = new WebSocket("ws://212.71.232.20:3000/");
-    
+//    var ws = new WebSocket("ws://212.71.232.20:3000/");
+    var ws = new WebSocket("ws://127.0.0.1:3000/");
+
     ws.onopen = function() {
-        alert("on open");
+        print("Connected");
     };
 
 ws.onmessage = function(message) {
-    alert("on message");
+        print("Message from server: " + message.data);
+        
+        var response = JSON.parse(message.data);
+        if ( response["method"] == "hello" ) {
+            ws.send(JSON.stringify({"action":"shoot"}));
+        }
 };
 
 ws.onclose = function() {
-    alert("on close");
+        print("Disconnected");
 };
-    
+
 </script>
 
 
