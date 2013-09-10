@@ -64,23 +64,19 @@ ws.onclose = function() {
         
         var canvas = document.getElementById("canvas");
         var context = canvas.getContext("2d");
-        
-        function drawBoard() {
             
-            for ( var i = 0; i < map["width"] + 1; ++i ) {
-                context.moveTo(i * step, 0);
-                context.lineTo(i * step, step * map["height"]);
-            }
-            
-            for ( var i = 0; i < map["height"] + 1; ++i ) {
-                context.moveTo(0, i * step);
-                context.lineTo(step * map["width"], i * step);
-            }
-            
-            context.strokeStyle = "black";
-            context.stroke();
+        for ( var i = 0; i < map["width"] + 1; ++i ) {
+            context.moveTo(i * step, 0);
+            context.lineTo(i * step, step * map["height"]);
         }
-        drawBoard();
+        
+        for ( var i = 0; i < map["height"] + 1; ++i ) {
+            context.moveTo(0, i * step);
+            context.lineTo(step * map["width"], i * step);
+        }
+        
+        context.strokeStyle = "black";
+        context.stroke();
     }
     
 </script>
