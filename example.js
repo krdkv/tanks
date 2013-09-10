@@ -1,6 +1,18 @@
-var http = require('http');
-http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello World\n');
-}).listen(1337, '212.71.232.20');
-console.log('Server running at http://212.71.232.20:1337/');
+var ws = require('websocket.io')
+  , server = ws.listen(3000)
+
+server.on('connection', function (client) {
+
+  console.log("server on");
+
+  client.on('message', function () { 
+
+  console.log("message");
+
+});
+  client.on('close', function () { 
+
+  console.log("close");
+
+});
+});
