@@ -88,6 +88,43 @@ Game.prototype.addPlayer = function(player) {
     this.players.push(player);
 }
 
+Game.prototype.startTurn = function() {
+    this.turnCount += 1;
+    console.log("turn " + this.turnCount);
+    for (var player in this.players) {
+        this.players[player]["action"] = undefined;
+    }
+    broadcast({"method":"newTurn", "map":this.map.getJSON()});
+    setTimeout(this.endTurn.bind(this), 1000);
+}
+
+Game.prototype.endTurn = function() {
+    for (var player in this.players) {
+        var action = this.players[player]["action"];
+        for (var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
+            var tank = this.map.tanks[tankIndex];
+            if (tank.nickname == this.players[player]["nickname"]) {
+                var newX = tank.X + action["deltaX"];
+                if (newX >= 0 && newX < this.map.width) {
+                    tank.X = newX;
+                }
+                var newY = tank.Y + action["deltaY"];
+                if (newY >= 0 && newY < this.map.height) {
+                    tank.Y = newY;
+                }
+                console.log("Tank " + tank.nickname + " moved to " + tank.X + " " + tank.Y);
+                break;
+            }
+        }
+    }
+    if (this.turnCount < 40) {
+        this.startTurn();
+    }
+    else {
+        broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":this.players[random(this.players.length)]["nickname"]});
+    }
+}
+
 Game.prototype.play = function() {
     
     this.map.generate(this.players);
@@ -98,8 +135,9 @@ Game.prototype.play = function() {
     }
     
     broadcast({"method":"startGame", "map":this.map.getJSON(), "players":playerNames});
-    
-    broadcast({"method":"endGame", "winner":this.players[random(this.players.length)]["nickname"]});
+
+    this.turnCount = 0;
+    this.startTurn();
 }
 
 // =================================================== TOURNAMENT ===================================================
@@ -150,8 +188,14 @@ server.on('connection', function (client) {
   client.on('message', function (data) {
         var response = JSON.parse(data);
         if ( response["method"] == "name" ) {
-            client["nickname"] = response["data"];
-            tournament.addPlayer(client);
+            if (!client["nickname"]) {
+                client["nickname"] = response["data"];
+                tournament.addPlayer(client);
+            }
+        }
+        else if (response["method"] == "action") {
+            client["action"] = response["data"];
+            console.log("action received:" + client["action"]);
         }
   });
   
