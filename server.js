@@ -45,8 +45,6 @@ function Map() {
     this.width = 0;
     this.height = 0;
     this.tanks = new Array();
-    this.firstTank;
-    this.secondTank;
 }
 
 Map.prototype.generate = function(players) {
@@ -55,18 +53,28 @@ Map.prototype.generate = function(players) {
     this.width = 10 + random(10);
     this.height = 10 + random(10);
     
-    this.firstTank = new Tank(this.players[0]["socketName"], this.players[0]["nickname"]);
-    this.secondTank = new Tank(this.players[1]["socketName"], this.players[1]["nickname"]);
+    for ( var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
+        var newTank = new Tank(this.players[tankIndex]["socketName"], this.players[tankIndex]["nickname"]);
+        this.tanks.push(newTank);
+    }
     
-    this.firstTank.X = random(0, Math.floor(this.width / 2));
-    this.firstTank.Y = random(0, Math.floor(this.height / 2));
+    // Only for two tanks
     
-    this.secondTank.X = random(Math.floor(this.width / 2), this.width);
-    this.secondTank.Y = random(Math.floor(this.height / 2), this.height);
+    this.tanks[0].X = random(0, Math.floor(this.width / 2));
+    this.tanks[0].Y = random(0, Math.floor(this.height / 2));
+    
+    this.tanks[1].X = random(Math.floor(this.width / 2), this.width);
+    this.tanks[1].Y = random(Math.floor(this.height / 2), this.height);
 }
 
 Map.prototype.getJSON = function() {
-    return { "width":this.width, "height":this.height, "tanks":[this.firstTank.getJSON(), this.secondTank.getJSON()] };
+    
+    var tanksArray = new Array();
+    for ( var tankIndex = 0; tankIndex < this.tanks.length; ++tankIndex ) {
+        tanksArray[tankIndex] = this.tanks[tankIndex].getJSON();
+    }
+    
+    return { "width":this.width, "height":this.height, "tanks":tanksArray };
 }
 
 // =================================================== GAME ===================================================
