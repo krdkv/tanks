@@ -117,8 +117,8 @@ Tournament.prototype.start = function() {
 var tournament  = new Tournament();
 
 server.on('connection', function (client) {
-        
-  client.send(JSON.stringify({"method" : "hello"}));
+          
+  client.send(JSON.stringify({"method" : "hello", "socketName": generateSocketId()}));
   
   client.on('message', function (data) {
         var response = JSON.parse(data);
@@ -137,4 +137,8 @@ function broadcast(jsObject) {
     for ( var client in server.clients ) {
         server.clients[client].send(JSON.stringify(jsObject));
     }
+}
+
+function generateSocketId() {
+    return "socket" + server.clientsCount;
 }
