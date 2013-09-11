@@ -27,29 +27,46 @@ function random(left, right) {
 
 // =================================================== TANK ===================================================
 
-function Tank(name) {
+function Tank(socketName, nickname) {
     this.X;
     this.Y;
+    this.socketName = socketName;
+    this.nickname = nickname;
+}
+
+Tank.prototype.getJSON = function() {
+    return {"x": this.X, "y": this.Y, "socketName": this.socketName, "nickname": this.nickname};
 }
 
 // =================================================== MAP ===================================================
 
 function Map() {
-    this.numberOfPlayers = 0;
+    this.players = null;
     this.width = 0;
     this.height = 0;
     this.tanks = new Array();
+    this.firstTank;
+    this.secondTank;
 }
 
-Map.prototype.generate = function(numberOfPlayers) {
+Map.prototype.generate = function(players) {
     
-    this.numberOfPlayers = numberOfPlayers;
+    this.players = players;
     this.width = 10 + random(10);
     this.height = 10 + random(10);
+    
+    this.firstTank = new Tank(this.players[0]["socketName"], this.players[0]["nickname"]);
+    this.secondTank = new Tank(this.players[1]["socketName"], this.players[1]["nickname"]);
+    
+    this.firstTank.X = random(0, Math.floor(this.width / 2));
+    this.firstTank.Y = random(0, Math.floor(this.height / 2));
+    
+    this.secondTank.X = random(Math.floor(this.width / 2), this.width);
+    this.secondTank.Y = random(Math.floor(this.height / 2), this.height);
 }
 
 Map.prototype.getJSON = function() {
-    return { "width":this.width, "height":this.height };
+    return { "width":this.width, "height":this.height, "tanks":[this.firstTank.getJSON(), this.secondTank.getJSON()] };
 }
 
 // =================================================== GAME ===================================================
@@ -65,7 +82,7 @@ Game.prototype.addPlayer = function(player) {
 
 Game.prototype.play = function() {
     
-    this.map.generate(this.players.length);
+    this.map.generate(this.players);
 
     var playerNames = new Array();
     for ( var player in this.players ) {
@@ -117,8 +134,10 @@ Tournament.prototype.start = function() {
 var tournament  = new Tournament();
 
 server.on('connection', function (client) {
-          
-  client.send(JSON.stringify({"method" : "hello", "socketName": generateSocketId()}));
+  
+  var socketName = generateSocketId();
+  client["socketName"] = socketName;
+  client.send(JSON.stringify({"method" : "hello", "socketName":socketName}));
   
   client.on('message', function (data) {
         var response = JSON.parse(data);

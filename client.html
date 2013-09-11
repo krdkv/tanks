@@ -13,6 +13,7 @@
     
 //    var ws = new WebSocket("ws://212.71.232.20:3000/");
     var ws = new WebSocket("ws://127.0.0.1:3000/");
+    var socketName;
     
     function setName() {
         ws.send(JSON.stringify({"method":"name", "data":$("#name").val()}));
@@ -34,7 +35,7 @@ ws.onmessage = function(message) {
         
         if ( response["method"] == "hello" ) {
             
-            print(response["socketName"]);
+            socketName = response["socketName"];
             ws.send(JSON.stringify({"method":"name", "data": getName()}));
             
         } else if ( response["method"] == "startGame" ) {
@@ -80,7 +81,8 @@ ws.onclose = function() {
         context.strokeStyle = "black";
         context.stroke();
         
-        context.drawImage($("#tank").get(0), 200, 200);
+        context.drawImage($("#tank").get(0), 40 * map["tanks"][0]["x"], 40 * map["tanks"][0]["y"]);
+        context.drawImage($("#tank").get(0), 40 * map["tanks"][1]["x"], 40 * map["tanks"][1]["y"]);
     }
     
 </script>
