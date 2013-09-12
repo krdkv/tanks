@@ -74,7 +74,7 @@ Map.prototype.getJSON = function() {
         tanksArray[tankIndex] = this.tanks[tankIndex].getJSON();
     }
     
-    return { "width":this.width, "height":this.height, "tanks":tanksArray };
+    return { "width":this.width, "height":this.height, "tanks":tanksArray, "bullets":[{"x":5, "y":5}] };
 }
 
 // =================================================== GAME ===================================================
@@ -91,7 +91,6 @@ Game.prototype.addPlayer = function(player) {
 
 Game.prototype.startTurn = function() {
     this.turnCount += 1;
-    console.log("turn " + this.turnCount);
     for (var player in this.players) {
         this.players[player]["action"] = undefined;
     }
@@ -209,7 +208,6 @@ server.on('connection', function (client) {
         }
         else if (response["method"] == "action") {
             client["action"] = response["data"];
-            console.log("action received:" + client["action"]);
         }
   });
   

@@ -10,32 +10,39 @@ function startGame(players, map) {
 
 function newTurn(map) {
     
-    console.log(JSON.stringify(map));
+    var random = true;
     
-    var myTank;
-    for (var i=0; i<map.tanks.length; i++) {
-        tank = map.tanks[i];
-        console.log(tank);
-        if ( tank["mine"] ) {
-            myTank = tank;
-            break;
+    if ( ! random ) {
+        var myTank;
+        for (var i=0; i<map.tanks.length; i++) {
+            tank = map.tanks[i];
+            console.log(tank);
+            if ( tank["mine"] ) {
+                myTank = tank;
+                break;
+            }
         }
-    }
-    var myX = myTank["x"];
-    var myY = myTank["y"];
-
-    if (dir == "up") {
-        if ( myY == 0 ) {
-            dir = "down";
+        var myX = myTank["x"];
+        var myY = myTank["y"];
+        
+        if (dir == "up") {
+            if ( myY == 0 ) {
+                dir = "down";
+            }
         }
-    }
-    else if (dir == "down") {
-        if ( myY == map["height"] - 1 ) {
-            dir = "up";
+        else if (dir == "down") {
+            if ( myY == map["height"] - 1 ) {
+                dir = "up";
+            }
         }
+        
+        return {"move": dir};
+        
+    } else {
+        
+        return {"move": ["up", "down", "left", "right"][Math.floor(Math.random()*4)]};
+        
     }
-    
-    return {"move": dir};
 }
 
 // winner - String
