@@ -5,50 +5,37 @@ function getName() {
     return myName;
 }
 
-// players - Array of names
-
-// map - JS Object
-// map["width"]
-// map["height"]
-
 function startGame(players, map) {
 }
 
 function newTurn(map) {
+    
+    console.log(JSON.stringify(map));
+    
     var myTank;
     for (var i=0; i<map.tanks.length; i++) {
         tank = map.tanks[i];
         console.log(tank);
-        if (tank["nickname"] == myName) {
+        if ( tank["mine"] ) {
             myTank = tank;
             break;
         }
     }
     var myX = myTank["x"];
     var myY = myTank["y"];
-    console.log("My position: " + myX + " " + myY);
-    var dX = 0;
-    var dY = 0;
+
     if (dir == "up") {
-        if (myY > 0) {
-            dY = -1;
-        }
-        else {
-            dY = 1;
+        if ( myY == 0 ) {
             dir = "down";
         }
     }
     else if (dir == "down") {
-        if (myY < map["height"]-1) {
-            dY = 1;
-        }
-        else {
-            dY = -1;
+        if ( myY == map["height"] - 1 ) {
             dir = "up";
         }
     }
-    console.log("My action: " + dX + " " + dY);
-    return {"deltaX": dX, "deltaY": dY};
+    
+    return {"move": dir};
 }
 
 // winner - String

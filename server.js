@@ -82,6 +82,7 @@ Map.prototype.getJSON = function() {
 function Game() {
     this.players = new Array();
     this.map = new Map();
+    this.turnCount = 0;
 }
 
 Game.prototype.addPlayer = function(player) {
@@ -95,7 +96,7 @@ Game.prototype.startTurn = function() {
         this.players[player]["action"] = undefined;
     }
     broadcast({"method":"newTurn", "map":this.map.getJSON()});
-    setTimeout(this.endTurn.bind(this), 1000);
+    setTimeout(this.endTurn.bind(this), 100);
 }
 
 Game.prototype.endTurn = function() {
@@ -103,17 +104,30 @@ Game.prototype.endTurn = function() {
         var action = this.players[player]["action"];
         for (var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
             var tank = this.map.tanks[tankIndex];
-            if (tank.nickname == this.players[player]["nickname"]) {
-                var newX = tank.X + action["deltaX"];
-                if (newX >= 0 && newX < this.map.width) {
-                    tank.X = newX;
+            if (tank["socketName"] == this.players[player]["socketName"]) {
+                
+                switch ( action["move"] ) {
+                        case "up":
+                            if ( tank["Y"] - 1 >= 0 ) {
+                                tank["Y"]--;
+                            }
+                            break;
+                        case "down":
+                            if ( tank["Y"] + 1 < this.map["height"] ) {
+                                tank["Y"]++;
+                            }
+                            break;
+                        case "left":
+                            if ( tank["X"] - 1 >= 0 ) {
+                                tank["X"]--;
+                            }
+                            break;
+                        case "right":
+                            if ( tank["X"] + 1 < this.map["width"] ) {
+                                tank["X"]++;
+                            }
+                            break;
                 }
-                var newY = tank.Y + action["deltaY"];
-                if (newY >= 0 && newY < this.map.height) {
-                    tank.Y = newY;
-                }
-                console.log("Tank " + tank.nickname + " moved to " + tank.X + " " + tank.Y);
-                break;
             }
         }
     }

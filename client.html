@@ -47,9 +47,19 @@ ws.onmessage = function(message) {
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
         } else if (response["method"] == "newTurn") {
             drawMap(response["map"]);
-            var a = newTurn(response["map"]);
-            console.log(a);
-            ws.send(JSON.stringify({"method":"action", "data": a}));
+            
+            for ( var i = 0; i < response["map"]["tanks"].length; i++) {
+                var tank = response["map"]["tanks"][i];
+                console.log(tank);
+                if (tank["socketName"] == socketName) {
+                    tank["mine"] = true;
+                }
+                delete tank["socketName"];
+            }
+
+            
+            var action = newTurn(response["map"]);
+            ws.send(JSON.stringify({"method":"action", "data":action}));
         } else if ( response["method"] == "endGame" ) {
             drawMap(response["map"]);            
             endGame(response["winner"]);
