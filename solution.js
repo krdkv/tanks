@@ -40,7 +40,7 @@ function newTurn(map) {
         
     } else {
         
-        return {"move": ["up", "down", "left", "right"][Math.floor(Math.random()*4)]};
+        return {"move": ["up", "down", "left", "right"][Math.floor(Math.random()*4)], "shoot": "left"};
         
     }
 }

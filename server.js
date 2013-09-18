@@ -25,6 +25,141 @@ function random(left, right) {
     }
 }
 
+// =================================================== BULLET ===================================================
+
+function Bullet(x, y, direction, mapWidth, mapHeight, socketName) {
+    this.X = x;
+    this.Y = y;
+    this.direction = direction;
+    this.socketName = socketName;
+    this.mapWidth = mapWidth;
+    this.mapHeight = mapHeight;
+}
+
+Bullet.prototype.move = function() {
+    switch ( this.direction ) {
+        case "up-left":
+        case "left-up":
+            if ( this.X == 0 && this.Y == 0 ) {
+                this.direction = "down-right";
+                this.X++;
+                this.Y++;
+            } else if ( this.X == 0 && this.Y > 0 ) {
+                this.direction = "right-up";
+                this.Y--;
+                this.X++;
+            } else if ( this.Y == 0 && this.X > 0 ) {
+                this.direction = "left-down";
+                this.X--;
+                this.Y++;
+            } else {
+                this.X--;
+                this.Y--;
+            }
+            break;
+            
+        case "up":
+            if ( this.Y == 0 ) {
+                this.Y++;
+                this.direction = "down";
+            } else {
+                this.Y--;
+            }
+            break;
+            
+        case "up-right":
+        case "right-up":
+            if ( this.X == this.mapWidth - 1 && this.Y == 0 ) {
+                this.direction = "left-down";
+                this.X--;
+                this.Y++;
+            } else if ( this.X == this.mapWidth - 1 && this.Y > 0 ) {
+                this.direction = "left-up";
+                this.Y--;
+                this.X--;
+            } else if ( this.Y == 0 && this.X < this.mapWidth - 1 ) {
+                this.direction = "right-down";
+                this.X++;
+                this.Y++;
+            } else {
+                this.Y--;
+                this.X++;
+            }
+            break;
+        
+        case "left":
+            if ( this.X == 0 ) {
+                this.X++;
+                this.direction = "right";
+            } else {
+                this.X--;
+            }
+            break;
+            
+        case "right":
+            if ( this.X == this.mapWidth - 1 ) {
+                this.X--;
+                this.direction = "left";
+            } else {
+                this.X++;
+            }
+            break;
+            
+        case "left-down":
+        case "down-left":
+            if ( this.X == 0 && this.Y == this.mapHeight - 1 ) {
+                this.direction = "up-right";
+                this.Y--;
+                this.X++;
+            } else if ( this.X == 0 && this.Y < this.mapHeight - 1 ) {
+                this.direction = "right-down";
+                this.X++;
+                this.Y++;
+            } else if ( this.X > 0 && this.Y == this.mapHeight - 1 ) {
+                this.direction = "left-up";
+                this.X--;
+                this.Y--;
+            } else {
+                this.X--;
+                this.Y++;
+            }
+            break;
+            
+        case "down":
+            if ( this.Y == this.mapHeight - 1 ) {
+                this.direction = "up";
+                this.Y--;
+            } else {
+                this.Y++;
+            }
+            break;
+            
+        case "right-down":
+        case "down-right":
+            if ( this.X == this.mapWidth - 1 && this.Y == this.mapHeight - 1 ) {
+                this.direction = "left-up";
+                this.X--;
+                this.Y--;
+            } else if ( this.X == this.mapWidth - 1 && this.Y < this.mapHeight -1  ) {
+                this.direction = "left-down";
+                this.X--;
+                this.Y++;
+            } else if ( this.Y == this.mapHeight - 1 && this.X < this.mapWidth - 1 ) {
+                this.direction = "right-up";
+                this.X++;
+                this.Y--;
+            } else {
+                this.X++;
+                this.Y++;
+            }
+            break;
+    }
+}
+
+Bullet.prototype.getJSON = function() {
+    return {"x": Number(this.X), "y": Number(this.Y), "socketName": this.socketName, "direction": this.direction};
+}
+
 // =================================================== TANK ===================================================
 
 function Tank(socketName, nickname) {
@@ -45,6 +180,7 @@ function Map() {
     this.width = 0;
     this.height = 0;
     this.tanks = new Array();
+    this.bullets = new Array();
 }
 
 Map.prototype.generate = function(players) {
@@ -57,6 +193,10 @@ Map.prototype.generate = function(players) {
         var newTank = new Tank(this.players[tankIndex]["socketName"], this.players[tankIndex]["nickname"]);
         this.tanks.push(newTank);
     }
+    
+    this.bullets.push(new Bullet(5, 0, "right-down", this.width, this.height, this.players[0]["socketName"]));
+    this.bullets.push(new Bullet(4, 4, "left", this.width, this.height, this.players[0]["socketName"]));
+    this.bullets.push(new Bullet(3, 1, "left-up", this.width, this.height, this.players[0]["socketName"]));
     
     // Only for two tanks
     
@@ -74,7 +214,12 @@ Map.prototype.getJSON = function() {
         tanksArray[tankIndex] = this.tanks[tankIndex].getJSON();
     }
     
-    return { "width":this.width, "height":this.height, "tanks":tanksArray, "bullets":[{"x":5, "y":5}] };
+    var bulletsArray = new Array();
+    for ( var bulletIndex = 0; bulletIndex < this.bullets.length; ++bulletIndex ) {
+        bulletsArray[bulletIndex] = this.bullets[bulletIndex].getJSON();
+    }
+    
+    return { "width":this.width, "height":this.height, "tanks":tanksArray, "bullets":bulletsArray };
 }
 
 // =================================================== GAME ===================================================
@@ -101,6 +246,7 @@ Game.prototype.startTurn = function() {
 Game.prototype.endTurn = function() {
     for (var player in this.players) {
         var action = this.players[player]["action"];
+        
         for (var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
             var tank = this.map.tanks[tankIndex];
             if (tank["socketName"] == this.players[player]["socketName"]) {
@@ -130,7 +276,12 @@ Game.prototype.endTurn = function() {
             }
         }
     }
-    if (this.turnCount < 40) {
+    
+    for ( var bulletIndex = 0; bulletIndex < this.map["bullets"].length; ++bulletIndex ) {
+        this.map["bullets"][bulletIndex].move();
+    }
+    
+    if (this.turnCount < 500) {
         this.startTurn();
     }
     else {
