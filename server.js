@@ -32,6 +32,10 @@ function isOnMap(x, y, width, height) {
     return false;
 }
 
+function hasSameCoordinates(object1, object2) {
+    return object1["X"] == object2["X"] && object1["Y"] == object2["Y"];
+}
+
 // =================================================== Weapon ===============================================
 
 function Weapon(type, x, y, direction, mapWidth, mapHeight, socketName) {
@@ -347,6 +351,7 @@ Game.prototype.endTurn = function() {
         }
     }
     
+    // Moving bullets
     
     var length = this.map["bullets"].length;
     for ( var bulletIndex = 0; bulletIndex < length; ++bulletIndex ) {
@@ -357,11 +362,34 @@ Game.prototype.endTurn = function() {
         }
     }
     
-    if (this.turnCount < 500) {
-        this.startTurn();
+    // Checking collisions
+    
+    var deadTank = null;
+    
+    for ( var bulletIndex = 0; bulletIndex < this.map["bullets"].length; ++bulletIndex ) {
+        for ( var tankIndex = 0; tankIndex < this.map["tanks"].length; ++tankIndex ) {
+            
+            var bullet = this.map["bullets"][bulletIndex];
+            var tank = this.map["tanks"][tankIndex];
+            
+            if ( hasSameCoordinates(bullet, tank) && bullet["socketName"] != tank["socketName"] ) {
+                deadTank = this.map["tanks"][tankIndex]["socketName"];
+            }
+        }
     }
-    else {
-        broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":this.players[random(this.players.length)]["nickname"]});
+    
+    if ( deadTank ) {
+        
+        for ( var tankIndex = 0; tankIndex < this.map["tanks"].length; ++tankIndex ) {
+            if ( this.map["tanks"][tankIndex]["socketName"] != deadTank ) {
+                broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":this.map["tanks"][tankIndex]["nickname"]});
+            }
+        }
+        
+    } else if ( this.turnCount < 500 ) {
+        this.startTurn();
+    } else {
+        broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":"draw"});
     }
 }
 
