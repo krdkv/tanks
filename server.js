@@ -118,21 +118,18 @@ function BouncyBullet(x, y, direction, mapWidth, mapHeight, socketName) {
 }
 
 BouncyBullet.prototype.move = function() {
+    
+    var currentDirection = this.direction;
+    
     switch ( this.direction ) {
         case "up-left":
         case "left-up":
             if ( this.X == 0 && this.Y == 0 ) {
                 this.direction = "down-right";
-                this.X++;
-                this.Y++;
             } else if ( this.X == 0 && this.Y > 0 ) {
                 this.direction = "right-up";
-                this.Y--;
-                this.X++;
             } else if ( this.Y == 0 && this.X > 0 ) {
                 this.direction = "left-down";
-                this.X--;
-                this.Y++;
             } else {
                 this.X--;
                 this.Y--;
@@ -141,7 +138,6 @@ BouncyBullet.prototype.move = function() {
             
         case "up":
             if ( this.Y == 0 ) {
-                this.Y++;
                 this.direction = "down";
             } else {
                 this.Y--;
@@ -152,16 +148,10 @@ BouncyBullet.prototype.move = function() {
         case "right-up":
             if ( this.X == this.mapWidth - 1 && this.Y == 0 ) {
                 this.direction = "left-down";
-                this.X--;
-                this.Y++;
             } else if ( this.X == this.mapWidth - 1 && this.Y > 0 ) {
                 this.direction = "left-up";
-                this.Y--;
-                this.X--;
             } else if ( this.Y == 0 && this.X < this.mapWidth - 1 ) {
                 this.direction = "right-down";
-                this.X++;
-                this.Y++;
             } else {
                 this.Y--;
                 this.X++;
@@ -170,7 +160,6 @@ BouncyBullet.prototype.move = function() {
         
         case "left":
             if ( this.X == 0 ) {
-                this.X++;
                 this.direction = "right";
             } else {
                 this.X--;
@@ -179,7 +168,6 @@ BouncyBullet.prototype.move = function() {
             
         case "right":
             if ( this.X == this.mapWidth - 1 ) {
-                this.X--;
                 this.direction = "left";
             } else {
                 this.X++;
@@ -190,16 +178,10 @@ BouncyBullet.prototype.move = function() {
         case "down-left":
             if ( this.X == 0 && this.Y == this.mapHeight - 1 ) {
                 this.direction = "up-right";
-                this.Y--;
-                this.X++;
             } else if ( this.X == 0 && this.Y < this.mapHeight - 1 ) {
                 this.direction = "right-down";
-                this.X++;
-                this.Y++;
             } else if ( this.X > 0 && this.Y == this.mapHeight - 1 ) {
                 this.direction = "left-up";
-                this.X--;
-                this.Y--;
             } else {
                 this.X--;
                 this.Y++;
@@ -209,7 +191,6 @@ BouncyBullet.prototype.move = function() {
         case "down":
             if ( this.Y == this.mapHeight - 1 ) {
                 this.direction = "up";
-                this.Y--;
             } else {
                 this.Y++;
             }
@@ -219,21 +200,19 @@ BouncyBullet.prototype.move = function() {
         case "down-right":
             if ( this.X == this.mapWidth - 1 && this.Y == this.mapHeight - 1 ) {
                 this.direction = "left-up";
-                this.X--;
-                this.Y--;
             } else if ( this.X == this.mapWidth - 1 && this.Y < this.mapHeight -1  ) {
                 this.direction = "left-down";
-                this.X--;
-                this.Y++;
             } else if ( this.Y == this.mapHeight - 1 && this.X < this.mapWidth - 1 ) {
                 this.direction = "right-up";
-                this.X++;
-                this.Y--;
             } else {
                 this.X++;
                 this.Y++;
             }
             break;
+    }
+    
+    if ( currentDirection != this.direction ) {
+        this.move();
     }
 }
 
