@@ -41,7 +41,7 @@ function newTurn(map) {
     } else {
         
         return {"move": ["up", "down", "left", "right"][Math.floor(Math.random()*4)],
-                "shoot": {"type":"bouncyBullet", "direction": ["up", "down", "left", "right", "left-up", "left-down", "right-up", "right-down"][Math.floor(Math.random()*8)] }};
+            "shoot": Math.floor(Math.random()*20) == 1 ? {"type":"bullet", "direction": ["up", "down", "left", "right", "left-up", "left-down", "right-up", "right-down"][Math.floor(Math.random()*8)] }  : {}  };
         
     }
 }
