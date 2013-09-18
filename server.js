@@ -32,6 +32,17 @@ function isOnMap(x, y, width, height) {
     return false;
 }
 
+// =================================================== Weapon ===============================================
+
+function Weapon(type, x, y, direction, mapWidth, mapHeight, socketName) {
+    if ( type == "bullet" ) {
+        return new Bullet(x, y, direction, mapWidth, mapHeight, socketName);
+    } else if ( type == "bouncyBullet" ) {
+        return new BouncyBullet(x, y, direction, mapWidth, mapHeight, socketName);
+    }
+    return null;
+}
+
 // =================================================== Bullet ===================================================
 
 function Bullet(x, y, direction, mapWidth, mapHeight, socketName) {
@@ -297,10 +308,6 @@ Map.prototype.generate = function(players) {
         var newTank = new Tank(x, y, this.width, this.height, this.players[tankIndex]["socketName"], this.players[tankIndex]["nickname"]);
         this.tanks.push(newTank);
     }
-    
-    this.bullets.push(new BouncyBullet(5, 0, "right-down", this.width, this.height, this.players[0]["socketName"]));
-    this.bullets.push(new Bullet(4, 4, "left", this.width, this.height, this.players[0]["socketName"]));
-    this.bullets.push(new BouncyBullet(3, 1, "left-up", this.width, this.height, this.players[0]["socketName"]));
 }
 
 Map.prototype.getJSON = function() {
@@ -336,7 +343,7 @@ Game.prototype.startTurn = function() {
         this.players[player]["action"] = undefined;
     }
     broadcast({"method":"newTurn", "map":this.map.getJSON()});
-    setTimeout(this.endTurn.bind(this), 300);
+    setTimeout(this.endTurn.bind(this), 100);
 }
 
 Game.prototype.endTurn = function() {
@@ -345,8 +352,18 @@ Game.prototype.endTurn = function() {
         
         for (var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
             var tank = this.map.tanks[tankIndex];
-            if (tank["socketName"] == this.players[player]["socketName"]) {                
+            if (tank["socketName"] == this.players[player]["socketName"]) {
+                
+                if ( action["shoot"] ) {                
+                    
+                    var newWeapon = Weapon(action["shoot"]["type"], tank["X"], tank["Y"], action["shoot"]["direction"], this.map.width, this.map.height, tank["socketName"]);
+                    if ( newWeapon ) {
+                        this.map["bullets"].push(newWeapon);
+                    }
+                }
+                
                 tank.move(action["move"]);
+
             }
         }
     }
