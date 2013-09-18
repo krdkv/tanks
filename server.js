@@ -233,6 +233,7 @@ function Tank(x, y, mapWidth, mapHeight, socketName, nickname) {
     this.mapHeight = mapHeight;
     this.socketName = socketName;
     this.nickname = nickname;
+    this.isDead = false;
 }
 
 Tank.prototype.move = function(direction) {
@@ -264,7 +265,11 @@ Tank.prototype.move = function(direction) {
 }
 
 Tank.prototype.getJSON = function() {
-    return {"x": this.X, "y": this.Y, "socketName": this.socketName, "nickname": this.nickname};
+    if ( this.isDead ) {
+        return {"x": this.X, "y": this.Y, "socketName": this.socketName, "nickname": this.nickname, "isDead": true};
+    } else {
+        return {"x": this.X, "y": this.Y, "socketName": this.socketName, "nickname": this.nickname};
+    }
 }
 
 // =================================================== MAP ===================================================
@@ -373,6 +378,7 @@ Game.prototype.endTurn = function() {
             var tank = this.map["tanks"][tankIndex];
             
             if ( hasSameCoordinates(bullet, tank) && bullet["socketName"] != tank["socketName"] ) {
+                this.map["tanks"][tankIndex]["isDead"] = true;
                 deadTank = this.map["tanks"][tankIndex]["socketName"];
             }
         }

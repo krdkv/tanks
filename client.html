@@ -9,6 +9,7 @@
     <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
     <img id="tank" src="img/tank.png" style="display:none;"></img>
     <img id="bullet" src="img/bullet.png" style="display:none;"></img>
+    <img id="fire" src="img/fire.png" style="display:none;"></img>
 </body>
 <script language="Javascript">
     
@@ -96,11 +97,23 @@ ws.onclose = function() {
         context.strokeStyle = "black";
         context.stroke();
         
-        context.drawImage($("#tank").get(0), 40 * map["tanks"][0]["x"], 40 * map["tanks"][0]["y"]);
-        context.drawImage($("#tank").get(0), 40 * map["tanks"][1]["x"], 40 * map["tanks"][1]["y"]);
+        var deadTankX = -1, deadTankY = -1;
+        
+        for ( var tankIndex = 0; tankIndex < map["tanks"].length; ++tankIndex ) {
+            var tank = map["tanks"][tankIndex];
+            if ( tank["isDead"] ) {
+                deadTankX = tank["x"];
+                deadTankY = tank["y"];
+                context.drawImage($("#fire").get(0), 40 * tank["x"], 40 * tank["y"]);
+            } else {
+                context.drawImage($("#tank").get(0), 40 * tank["x"], 40 * tank["y"]);
+            }
+        }
         
         for ( var bulletIndex in map["bullets"] ) {
-            context.drawImage($("#bullet").get(0), 40 * map["bullets"][bulletIndex]["x"], 40 * map["bullets"][bulletIndex]["y"]);
+            if ( map["bullets"][bulletIndex]["x"] != deadTankX && map["bullets"][bulletIndex]["y"] != deadTankY ) {
+                context.drawImage($("#bullet").get(0), 40 * map["bullets"][bulletIndex]["x"], 40 * map["bullets"][bulletIndex]["y"]);                
+            }
         }
     }
     
