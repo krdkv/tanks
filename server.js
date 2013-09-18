@@ -25,7 +25,14 @@ function random(left, right) {
     }
 }
 
-// =================================================== BULLET ===================================================
+function isOnMap(x, y, width, height) {
+    if ( x > 0 && x < width && y > 0 && y < height ) {
+        return true;
+    }
+    return false;
+}
+
+// =================================================== Bullet ===================================================
 
 function Bullet(x, y, direction, mapWidth, mapHeight, socketName) {
     this.X = x;
@@ -37,6 +44,69 @@ function Bullet(x, y, direction, mapWidth, mapHeight, socketName) {
 }
 
 Bullet.prototype.move = function() {
+    switch ( this.direction ) {
+        case "up-left":
+        case "left-up":
+            this.X--;
+            this.Y--;
+            break;
+            
+        case "up":
+            this.Y--;
+            break;
+            
+        case "up-right":
+        case "right-up":
+            this.Y--;
+            this.X++;
+            break;
+            
+        case "left":
+            this.X--;
+            break;
+            
+        case "right":
+            this.X++;
+            break;
+            
+        case "left-down":
+        case "down-left":
+            this.X--;
+            this.Y++;
+            break;
+            
+        case "down":
+            this.Y++;
+            break;
+            
+        case "right-down":
+        case "down-right":
+            this.X++;
+            this.Y++;
+            break;
+    }
+    
+    if ( ! isOnMap(this.X, this.Y, this.mapWidth, this.mapHeight) ) {
+        return -1;
+    }
+}
+
+Bullet.prototype.getJSON = function() {
+    return {"x": Number(this.X), "y": Number(this.Y), "socketName": this.socketName, "direction": this.direction, "type": "bullet"};
+}
+
+// =================================================== BouncyBullet ===================================================
+
+function BouncyBullet(x, y, direction, mapWidth, mapHeight, socketName) {
+    this.X = x;
+    this.Y = y;
+    this.direction = direction;
+    this.socketName = socketName;
+    this.mapWidth = mapWidth;
+    this.mapHeight = mapHeight;
+}
+
+BouncyBullet.prototype.move = function() {
     switch ( this.direction ) {
         case "up-left":
         case "left-up":
@@ -156,17 +226,47 @@ Bullet.prototype.move = function() {
     }
 }
 
-Bullet.prototype.getJSON = function() {
-    return {"x": Number(this.X), "y": Number(this.Y), "socketName": this.socketName, "direction": this.direction};
+BouncyBullet.prototype.getJSON = function() {
+    return {"x": Number(this.X), "y": Number(this.Y), "socketName": this.socketName, "direction": this.direction, "type": "bouncyBullet"};
 }
 
 // =================================================== TANK ===================================================
 
-function Tank(socketName, nickname) {
-    this.X;
-    this.Y;
+function Tank(x, y, mapWidth, mapHeight, socketName, nickname) {
+    this.X = x;
+    this.Y = y;
+    this.mapWidth = mapWidth;
+    this.mapHeight = mapHeight;
     this.socketName = socketName;
     this.nickname = nickname;
+}
+
+Tank.prototype.move = function(direction) {
+    switch ( direction ) {
+        case "up":
+            if ( this.Y != 0 ) {
+                this.Y--;
+            }
+            break;
+            
+        case "down":
+            if ( this.Y != this.mapHeight - 1 ) {
+                this.Y++;
+            }
+            break;
+            
+        case "left":
+            if ( this.X != 0 ) {
+                this.X--;
+            }
+            break;
+            
+        case "right":
+            if ( this.X != this.mapWidth - 1 ) {
+                this.X++;
+            }
+            break;
+    }
 }
 
 Tank.prototype.getJSON = function() {
@@ -190,21 +290,17 @@ Map.prototype.generate = function(players) {
     this.height = 10 + random(10);
     
     for ( var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
-        var newTank = new Tank(this.players[tankIndex]["socketName"], this.players[tankIndex]["nickname"]);
+        
+        var x = ( tankIndex == 0 ) ? random(0, Math.floor(this.width / 2)) : random(Math.floor(this.width / 2), this.width);
+        var y = ( tankIndex == 0 ) ? random(0, Math.floor(this.height / 2)) : random(Math.floor(this.height / 2), this.height);
+        
+        var newTank = new Tank(x, y, this.width, this.height, this.players[tankIndex]["socketName"], this.players[tankIndex]["nickname"]);
         this.tanks.push(newTank);
     }
     
-    this.bullets.push(new Bullet(5, 0, "right-down", this.width, this.height, this.players[0]["socketName"]));
+    this.bullets.push(new BouncyBullet(5, 0, "right-down", this.width, this.height, this.players[0]["socketName"]));
     this.bullets.push(new Bullet(4, 4, "left", this.width, this.height, this.players[0]["socketName"]));
-    this.bullets.push(new Bullet(3, 1, "left-up", this.width, this.height, this.players[0]["socketName"]));
-    
-    // Only for two tanks
-    
-    this.tanks[0].X = random(0, Math.floor(this.width / 2));
-    this.tanks[0].Y = random(0, Math.floor(this.height / 2));
-    
-    this.tanks[1].X = random(Math.floor(this.width / 2), this.width);
-    this.tanks[1].Y = random(Math.floor(this.height / 2), this.height);
+    this.bullets.push(new BouncyBullet(3, 1, "left-up", this.width, this.height, this.players[0]["socketName"]));
 }
 
 Map.prototype.getJSON = function() {
@@ -240,7 +336,7 @@ Game.prototype.startTurn = function() {
         this.players[player]["action"] = undefined;
     }
     broadcast({"method":"newTurn", "map":this.map.getJSON()});
-    setTimeout(this.endTurn.bind(this), 100);
+    setTimeout(this.endTurn.bind(this), 300);
 }
 
 Game.prototype.endTurn = function() {
@@ -249,36 +345,20 @@ Game.prototype.endTurn = function() {
         
         for (var tankIndex = 0; tankIndex < this.players.length; ++tankIndex ) {
             var tank = this.map.tanks[tankIndex];
-            if (tank["socketName"] == this.players[player]["socketName"]) {
-                
-                switch ( action["move"] ) {
-                        case "up":
-                            if ( tank["Y"] - 1 >= 0 ) {
-                                tank["Y"]--;
-                            }
-                            break;
-                        case "down":
-                            if ( tank["Y"] + 1 < this.map["height"] ) {
-                                tank["Y"]++;
-                            }
-                            break;
-                        case "left":
-                            if ( tank["X"] - 1 >= 0 ) {
-                                tank["X"]--;
-                            }
-                            break;
-                        case "right":
-                            if ( tank["X"] + 1 < this.map["width"] ) {
-                                tank["X"]++;
-                            }
-                            break;
-                }
+            if (tank["socketName"] == this.players[player]["socketName"]) {                
+                tank.move(action["move"]);
             }
         }
     }
     
-    for ( var bulletIndex = 0; bulletIndex < this.map["bullets"].length; ++bulletIndex ) {
-        this.map["bullets"][bulletIndex].move();
+    
+    var length = this.map["bullets"].length;
+    for ( var bulletIndex = 0; bulletIndex < length; ++bulletIndex ) {
+        if ( this.map["bullets"][bulletIndex].move() == -1 ) {
+            this.map["bullets"].splice(bulletIndex,1);
+            --length;
+            --bulletIndex;
+        }
     }
     
     if (this.turnCount < 500) {
