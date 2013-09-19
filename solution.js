@@ -53,9 +53,3 @@ function newTurn(map) {
         
     }
 }
-
-// winner - String
-
-function endGame(winner) {
-
-}

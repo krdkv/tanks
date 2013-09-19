@@ -388,7 +388,7 @@ Game.prototype.endTurn = function() {
         
         for ( var tankIndex = 0; tankIndex < this.map["tanks"].length; ++tankIndex ) {
             if ( this.map["tanks"][tankIndex]["socketName"] != deadTank ) {
-                broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":this.map["tanks"][tankIndex]["nickname"]});
+                broadcast({"method":"endGame", "map":this.map.getJSON(), "winner":this.map["tanks"][tankIndex]["socketName"]});
             }
         }
         

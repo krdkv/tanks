@@ -4,8 +4,29 @@
         type="text/javascript"></script>
     <script src="solution.js"
         type="text/javascript"></script>
+    <style type="text/css">
+        canvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            margin-top: 1em;
+        }
+        
+        #players {
+            text-align:center;
+            width:100%;
+        }
+        
+    </style>
 </head>
 <body>
+    <div id="players" style="font-size:50px; display:none;">
+        <span id="blueTankName" style="color:#225dff"></span>
+        <span> VS </span>
+        <span id="yellowTankName" style="color:#e2a800"></span>
+    </div>
     <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
     <img id="tank" src="img/tank.png" style="display:none;"></img>
     <img id="tankBlue" src="img/tankBlue.png" style="display:none;"></img>    
@@ -32,8 +53,8 @@
     }
     
     function print(str) {
-        //console.log(str);
-        $("body").append("<div>" + str + "</div>");
+        console.log(str);
+        //$("body").append("<div>" + str + "</div>");
     }
 
     ws.onopen = function() {
@@ -58,8 +79,15 @@ ws.onmessage = function(message) {
             blueTankSocket = response["map"]["tanks"][0]["socketName"];
             yellowTankSocket = response["map"]["tanks"][1]["socketName"];
             
+            console.log( response["map"]["tanks"][0]["nickname"] + " " + response["map"]["tanks"][1]["nickname"]);
+            
+            $("#blueTankName").text(response["map"]["tanks"][0]["nickname"]);
+            $("#yellowTankName").text(response["map"]["tanks"][1]["nickname"]);
+            $("#players").css("display", "block");
+            
             print("New game: " + response["players"][0] + " VS " + response["players"][1]);
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
+            
         } else if (response["method"] == "newTurn") {
             drawMap(response["map"]);
             
@@ -71,15 +99,19 @@ ws.onmessage = function(message) {
                 }
                 delete tank["socketName"];
             }
-
             
             var action = newTurn(response["map"]);
             ws.send(JSON.stringify({"method":"action", "data":action}));
         } else if ( response["method"] == "endGame" ) {
-            drawMap(response["map"]);            
-            endGame(response["winner"]);
             
-            print("Winner is " + response["winner"]);
+            drawMap(response["map"]);
+            
+            var blueIsWinner = isBlue(response["winner"]);
+            var winnerId = blueIsWinner ? "#blueTankName" : "#yellowTankName";
+            var loserId  = blueIsWinner ? "#yellowTankName" : "#blueTankName";
+            
+            $(winnerId).css("font-weight", "bold");
+            $(loserId).css("opacity", "0.2");
         }
 };
 
