@@ -40,8 +40,16 @@ function newTurn(map) {
         
     } else {
         
-        return {"move": ["up", "down", "left", "right"][Math.floor(Math.random()*4)],
-            "shoot": Math.floor(Math.random()*20) == 1 ? {"type":"bouncyBullet", "direction": ["up", "down", "left", "right", "left-up", "left-down", "right-up", "right-down"][Math.floor(Math.random()*8)] }  : {}  };
+        var direction = ["up", "down", "left", "right"][Math.floor(Math.random()*4)];
+        var shouldShoot = Math.floor(Math.random()*20) == 1;
+        var shootObject = {};
+        if ( shouldShoot ) {
+            var shootDirection = ["up", "down", "left", "right", "left-up", "left-down", "right-up", "right-down"][Math.floor(Math.random()*8)];
+            var bulletType = ["bullet", "bouncyBullet"][Math.floor(Math.random()*2)];
+            shootObject = {"type":bulletType, "direction":shootDirection};
+        }
+        
+        return {"move": direction, "shoot": shootObject  };
         
     }
 }

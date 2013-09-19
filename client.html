@@ -8,10 +8,20 @@
 <body>
     <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
     <img id="tank" src="img/tank.png" style="display:none;"></img>
+    <img id="tankBlue" src="img/tankBlue.png" style="display:none;"></img>    
     <img id="bullet" src="img/bullet.png" style="display:none;"></img>
+    <img id="bulletBlue" src="img/bulletBlue.png" style="display:none;"></img>
+    <img id="bouncyBullet" src="img/bouncyBullet.png" style="display:none;"></img>
+    <img id="bouncyBulletBlue" src="img/bouncyBulletBlue.png" style="display:none;"></img>
     <img id="fire" src="img/fire.png" style="display:none;"></img>
 </body>
 <script language="Javascript">
+    
+    var blueTankSocket, yellowTankSocket;
+    
+    function isBlue(socket) {
+        return socket == blueTankSocket;
+    }
     
 //    var ws = new WebSocket("ws://212.71.232.20:3000/");
     var ws = new WebSocket("ws://127.0.0.1:3000/");
@@ -44,6 +54,9 @@ ws.onmessage = function(message) {
             
             startGame(response["players"], response["map"]);
             drawMap(response["map"]);
+            
+            blueTankSocket = response["map"]["tanks"][0]["socketName"];
+            yellowTankSocket = response["map"]["tanks"][1]["socketName"];
             
             print("New game: " + response["players"][0] + " VS " + response["players"][1]);
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
@@ -106,13 +119,24 @@ ws.onclose = function() {
                 deadTankY = tank["y"];
                 context.drawImage($("#fire").get(0), 40 * tank["x"], 40 * tank["y"]);
             } else {
-                context.drawImage($("#tank").get(0), 40 * tank["x"], 40 * tank["y"]);
+                if ( isBlue(tank["socketName"]) ) {
+                    context.drawImage($("#tankBlue").get(0), 40 * tank["x"], 40 * tank["y"]);
+                } else {
+                    context.drawImage($("#tank").get(0), 40 * tank["x"], 40 * tank["y"]);
+                }
             }
         }
         
         for ( var bulletIndex in map["bullets"] ) {
             if ( map["bullets"][bulletIndex]["x"] != deadTankX && map["bullets"][bulletIndex]["y"] != deadTankY ) {
-                context.drawImage($("#bullet").get(0), 40 * map["bullets"][bulletIndex]["x"], 40 * map["bullets"][bulletIndex]["y"]);                
+                
+                var bullet = map["bullets"][bulletIndex];
+                var x = 40 * bullet["x"];
+                var y = 40 * bullet["y"];
+                
+                var imageId = "#" + bullet["type"] + (isBlue(bullet["socketName"]) ? "Blue" : "" );
+                
+                context.drawImage($(imageId).get(0), x, y);
             }
         }
     }
