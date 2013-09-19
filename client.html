@@ -106,12 +106,19 @@ ws.onmessage = function(message) {
             
             drawMap(response["map"]);
             
-            var blueIsWinner = isBlue(response["winner"]);
-            var winnerId = blueIsWinner ? "#blueTankName" : "#yellowTankName";
-            var loserId  = blueIsWinner ? "#yellowTankName" : "#blueTankName";
-            
-            $(winnerId).css("font-weight", "bold");
-            $(loserId).css("opacity", "0.2");
+            if ( response["winner"] != "draw" ) {
+                var blueIsWinner = isBlue(response["winner"]);
+                var winnerId = blueIsWinner ? "#blueTankName" : "#yellowTankName";
+                var loserId  = blueIsWinner ? "#yellowTankName" : "#blueTankName";
+                
+                $(winnerId).css("font-weight", "bold");
+                $(loserId).css("opacity", "0.2");
+                $("#players").css("text-align", "center");
+            } else {
+                $("#blueTankName").css("font-weight", "bold");
+                $("#yellowTankName").css("font-weight", "bold");                
+                $("#players").css("text-align", "center");
+            }
         }
 };
 
