@@ -1,0 +1,186 @@
+<html>
+<head>
+    <script src="js/jquery-1.9.1.min.js"
+        type="text/javascript"></script>
+    <script src="solution.js"
+        type="text/javascript"></script>
+    <style type="text/css">
+        canvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            margin-top: 1em;
+        }
+        
+        #players {
+            text-align:center;
+            width:100%;
+        }
+        
+    </style>
+</head>
+<body>
+    <div id="players" style="font-size:50px; display:none;">
+        <span id="blueTankName" style="color:#225dff"></span>
+        <span> VS </span>
+        <span id="yellowTankName" style="color:#e2a800"></span>
+    </div>
+    <canvas id="canvas" width="0px" height="0px" style="background: lightgray;"></canvas>
+    <img id="tank" src="img/tank.png" style="display:none;"></img>
+    <img id="tankBlue" src="img/tankBlue.png" style="display:none;"></img>    
+    <img id="bullet" src="img/bullet.png" style="display:none;"></img>
+    <img id="bulletBlue" src="img/bulletBlue.png" style="display:none;"></img>
+    <img id="bouncyBullet" src="img/bouncyBullet.png" style="display:none;"></img>
+    <img id="bouncyBulletBlue" src="img/bouncyBulletBlue.png" style="display:none;"></img>
+    <img id="fire" src="img/fire.png" style="display:none;"></img>
+</body>
+<script language="Javascript">
+    
+    var blueTankSocket, yellowTankSocket;
+    
+    function isBlue(socket) {
+        return socket == blueTankSocket;
+    }
+    
+//    var ws = new WebSocket("ws://212.71.232.20:3000/");
+    var ws = new WebSocket("ws://127.0.0.1:3000/");
+    var socketName;
+    
+    function setName() {
+        ws.send(JSON.stringify({"method":"name", "data":$("#name").val()}));
+    }
+    
+    function print(str) {
+        console.log(str);
+        //$("body").append("<div>" + str + "</div>");
+    }
+
+    ws.onopen = function() {
+        console.log("Connected");
+    };
+
+ws.onmessage = function(message) {
+        console.log("Message from server: " + message.data);
+        
+        var response = JSON.parse(message.data);
+        
+        if ( response["method"] == "hello" ) {
+            
+            socketName = response["socketName"];
+            ws.send(JSON.stringify({"method":"name", "data": getName()}));
+            
+        } else if ( response["method"] == "startGame" ) {
+            
+            startGame(response["players"], response["map"]);
+            drawMap(response["map"]);
+            
+            blueTankSocket = response["map"]["tanks"][0]["socketName"];
+            yellowTankSocket = response["map"]["tanks"][1]["socketName"];
+            
+            console.log( response["map"]["tanks"][0]["nickname"] + " " + response["map"]["tanks"][1]["nickname"]);
+            
+            $("#blueTankName").text(response["map"]["tanks"][0]["nickname"]);
+            $("#yellowTankName").text(response["map"]["tanks"][1]["nickname"]);
+            $("#players").css("display", "block");
+            
+            print("New game: " + response["players"][0] + " VS " + response["players"][1]);
+            print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
+            
+        } else if (response["method"] == "newTurn") {
+            drawMap(response["map"]);
+            
+            for ( var i = 0; i < response["map"]["tanks"].length; i++) {
+                var tank = response["map"]["tanks"][i];
+                console.log(tank);
+                if (tank["socketName"] == socketName) {
+                    tank["mine"] = true;
+                }
+                delete tank["socketName"];
+            }
+            
+            var action = newTurn(response["map"]);
+            ws.send(JSON.stringify({"method":"action", "data":action}));
+        } else if ( response["method"] == "endGame" ) {
+            
+            drawMap(response["map"]);
+            
+            if ( response["winner"] != "draw" ) {
+                var blueIsWinner = isBlue(response["winner"]);
+                var winnerId = blueIsWinner ? "#blueTankName" : "#yellowTankName";
+                var loserId  = blueIsWinner ? "#yellowTankName" : "#blueTankName";
+                
+                $(winnerId).css("font-weight", "bold");
+                $(loserId).css("opacity", "0.2");
+                $("#players").css("text-align", "center");
+            } else {
+                $("#blueTankName").css("font-weight", "bold");
+                $("#yellowTankName").css("font-weight", "bold");                
+                $("#players").css("text-align", "center");
+            }
+        }
+};
+
+ws.onclose = function() {
+        print("Disconnected");
+};
+
+    function drawMap(map) {
+        
+        var step = 40;
+        
+        $("#canvas").attr("width", 40 * map["width"]);
+        $("#canvas").attr("height", 40 * map["height"]);
+        
+        var canvas = document.getElementById("canvas");
+        var context = canvas.getContext("2d");
+            
+        for ( var i = 0; i < map["width"] + 1; ++i ) {
+            context.moveTo(i * step, 0);
+            context.lineTo(i * step, step * map["height"]);
+        }
+        
+        for ( var i = 0; i < map["height"] + 1; ++i ) {
+            context.moveTo(0, i * step);
+            context.lineTo(step * map["width"], i * step);
+        }
+        
+        context.strokeStyle = "black";
+        context.stroke();
+        
+        var deadTankX = -1, deadTankY = -1;
+        
+        for ( var tankIndex = 0; tankIndex < map["tanks"].length; ++tankIndex ) {
+            var tank = map["tanks"][tankIndex];
+            if ( tank["isDead"] ) {
+                deadTankX = tank["x"];
+                deadTankY = tank["y"];
+                context.drawImage($("#fire").get(0), 40 * tank["x"], 40 * tank["y"]);
+            } else {
+                if ( isBlue(tank["socketName"]) ) {
+                    context.drawImage($("#tankBlue").get(0), 40 * tank["x"], 40 * tank["y"]);
+                } else {
+                    context.drawImage($("#tank").get(0), 40 * tank["x"], 40 * tank["y"]);
+                }
+            }
+        }
+        
+        for ( var bulletIndex in map["bullets"] ) {
+            if ( map["bullets"][bulletIndex]["x"] != deadTankX && map["bullets"][bulletIndex]["y"] != deadTankY ) {
+                
+                var bullet = map["bullets"][bulletIndex];
+                var x = 40 * bullet["x"];
+                var y = 40 * bullet["y"];
+                
+                var imageId = "#" + bullet["type"] + (isBlue(bullet["socketName"]) ? "Blue" : "" );
+                
+                context.drawImage($(imageId).get(0), x, y);
+            }
+        }
+    }
+    
+</script>
+
+
+</html>
