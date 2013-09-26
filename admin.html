@@ -22,6 +22,8 @@
     </style>
 </head>
 <body>
+    <button id="speed-up">Speed Up!</button>
+    <button id="slow-down">Slow down!</button>
     <div id="players" style="font-size:50px; display:none;">
         <span id="blueTankName" style="color:#225dff"></span>
         <span> VS </span>
@@ -37,7 +39,17 @@
     <img id="fire" src="img/fire.png" style="display:none;"></img>
 </body>
 <script language="Javascript">
-    
+
+    $("#speed-up").click(function() {
+        console.log("Speeding up");
+        ws.send(JSON.stringify({"method":"speedUp"}));
+    });
+
+    $("#slow-down").click(function() {
+        console.log("Slowing down");
+        ws.send(JSON.stringify({"method":"slowDown"}));
+    });
+
     var blueTankSocket, yellowTankSocket;
     
     function isBlue(socket) {
@@ -61,7 +73,7 @@
         console.log("Connected");
     };
 
-ws.onmessage = function(message) {
+    ws.onmessage = function(message) {
         console.log("Message from server: " + message.data);
         
         var response = JSON.parse(message.data);
@@ -69,11 +81,18 @@ ws.onmessage = function(message) {
         if ( response["method"] == "hello" ) {
             
             socketName = response["socketName"];
-            ws.send(JSON.stringify({"method":"name", "data": getName()}));
+            var adminPwd = prompt("Admin password:");
+            console.log(adminPwd);
+            ws.send(JSON.stringify({"method":"admin", "data": adminPwd}));
             
+        } else if ( response["method"] == "passwordOK" ) {
+            console.log("Password accepted.");
+        } else if ( response["method"] == "passwordWrong" ) {
+            console.log("Password rejected.");
+            $("#speed-up").attr("disabled", "disabled");
+            $("#slow-down").attr("disabled", "disabled");
         } else if ( response["method"] == "startGame" ) {
             
-            startGame(response["players"], response["map"]);
             drawMap(response["map"]);
             
             blueTankSocket = response["map"]["tanks"][0]["socketName"];
@@ -89,21 +108,11 @@ ws.onmessage = function(message) {
             print("Map: " + response["map"]["width"] + " X " + response["map"]["height"]);
             
         } else if (response["method"] == "newTurn") {
+
             drawMap(response["map"]);
-            
-            for ( var i = 0; i < response["map"]["tanks"].length; i++) {
-                var tank = response["map"]["tanks"][i];
-                console.log(tank);
-                if (tank["socketName"] == socketName) {
-                    tank["mine"] = true;
-                }
-                delete tank["socketName"];
-            }
-            
-            var action = newTurn(response["map"]);
-            ws.send(JSON.stringify({"method":"action", "data":action}));
+
         } else if ( response["method"] == "endGame" ) {
-            
+
             drawMap(response["map"]);
             
             if ( response["winner"] != "draw" ) {
@@ -120,11 +129,11 @@ ws.onmessage = function(message) {
                 $("#players").css("text-align", "center");
             }
         }
-};
+    };
 
-ws.onclose = function() {
+    ws.onclose = function() {
         print("Disconnected");
-};
+    };
 
     function drawMap(map) {
         

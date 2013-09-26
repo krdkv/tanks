@@ -331,7 +331,7 @@ Game.prototype.startTurn = function() {
         this.players[player]["action"] = undefined;
     }
     broadcast({"method":"newTurn", "map":this.map.getJSON()});
-    setTimeout(this.endTurn.bind(this), 100);
+    setTimeout(this.endTurn.bind(this), turnDelay);
 }
 
 Game.prototype.endTurn = function() {
@@ -452,6 +452,10 @@ Tournament.prototype.start = function() {
 // =================================================== SERVER ===================================================
 
 var tournament  = new Tournament();
+var turnDelay = 100;
+
+var adminPassword = (1000000 * Math.random()).toString(16).substring(0, 5);
+console.log("Admin password: " + adminPassword);
 
 server.on('connection', function (client) {
   
@@ -469,6 +473,33 @@ server.on('connection', function (client) {
         }
         else if (response["method"] == "action") {
             client["action"] = response["data"];
+        }
+        else if ( response["method"] == "admin" ) {
+            if ( response["data"] == adminPassword ) {
+                client["admin"] = true;
+                client.send(JSON.stringify({"method": "passwordOK"}))
+            }
+            else {
+                client.send(JSON.stringify({"method": "passwordWrong"}))
+            }
+        }
+        else if ( response["method"] == "speedUp" ) {
+            if ( client["admin"] == true ) {
+                turnDelay = 0.75 * turnDelay;
+                if (turnDelay < 100) {
+                    turnDelay = 100;
+                }
+                console.log("turn delay decreased to " + turnDelay);
+            }
+        }
+        else if ( response["method"] == "slowDown" ) {
+            if ( client["admin"] == true ) {
+                turnDelay = 1.25 * turnDelay;
+                if (turnDelay > 1000) {
+                    turnDelay = 1000;
+                }
+                console.log("turn delay increased to " + turnDelay);
+            }
         }
   });
   
