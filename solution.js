@@ -14,7 +14,7 @@ function newTurn(map) {
     var shootObject = {};
     if ( shouldShoot ) {
         var shootDirection = ["up", "down", "left", "right", "left-up", "left-down", "right-up", "right-down"][Math.floor(Math.random()*8)];
-        var bulletType = ["bullet", "bouncyBullet"][Math.floor(Math.random()*2)];
+        var bulletType = ["bullet", "bouncyBullet", "mine"][Math.floor(Math.random()*3)];
         shootObject = {"type":bulletType, "direction":shootDirection};
     }
         

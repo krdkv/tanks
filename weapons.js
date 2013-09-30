@@ -7,6 +7,8 @@ function Weapon(type, x, y, direction, mapWidth, mapHeight, socketName) {
         return new Bullet(x, y, direction, mapWidth, mapHeight, socketName);
     } else if ( type == "bouncyBullet" ) {
         return new BouncyBullet(x, y, direction, mapWidth, mapHeight, socketName);
+    } else if ( type == "mine" ) {
+        return new Mine(x, y, mapWidth, mapHeight, socketName);
     }
     return null;
 }
@@ -16,6 +18,22 @@ function isOnMap(x, y, width, height) {
         return true;
     }
     return false;
+}
+
+// =================================================== Mine ===================================================
+
+function Mine(x, y, mapWidth, mapHeight, socketName) {
+    this.X = x;
+    this.Y = y;
+    this.socketName = socketName;
+    this.mapWidth = mapWidth;
+    this.mapHeight = mapHeight;
+}
+
+Mine.prototype.move = function(){}
+
+Mine.prototype.getJSON = function() {
+    return {"x": Number(this.X), "y": Number(this.Y), "socketName": this.socketName, "type": "mine"};
 }
 
 // =================================================== Bullet ===================================================
